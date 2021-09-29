@@ -1,0 +1,94 @@
+'Данный скрипт создавался для проверки наличия несоответствий между графиком отпусков и графиком работы компании
+
+'чтобы получить кол-во дней в каждом месяце в цикле
+Public Function n_days(month As Long, year As Long) As Long
+    date_next_month = DateSerial(year, month + 1, 1)
+    last_day_month = date_next_month - 1
+    n_days = Day(last_day_month)
+End Function
+
+'чтобы вытащить отдельно имя и фамилию для склонения (наприм: "у Иванова Ивана", а не "у Иванов Иван")
+Public Function n_word(txt As String, Optional delim As String = " ", Optional n As Long = 1) As String
+    arFrags = Split(txt, delim)
+    n_word = arFrags(UBound(arFrags) - n + 1)
+End Function
+
+Sub check()
+Application.ScreenUpdating = False
+Dim j As Long
+Dim month_name As String
+Dim pers As String
+
+Dim pers_rng, date_rng As Range
+lastrow = Cells(Rows.Count, 2).End(xlUp).Row
+
+Set date_rng = ThisWorkbook.ActiveSheet.Range(Cells(1, 11), Cells(1, 365))
+
+For i = 5 To lastrow Step 2
+    'pers - отдельный сотрудник
+    pers = ThisWorkbook.ActiveSheet.Cells(i, 2).Value
+    'pers_rng - строка этого сотрудника в графике отпусков
+    Set pers_rng = ThisWorkbook.ActiveSheet.Range(Cells(i, 11), Cells(i, 365))
+
+    For j = 1 To (month(Date) - 1)
+    'кол-во дней отпуска по месяцам в графике отпусков
+    '(даты через дефис, т.к. vba понимает американский формат)
+    'n_days - кол-во дней в месяце
+        month_h = WorksheetFunction.SumIfs(pers_rng, date_rng, ">=" & j & "-01-" & year(Date), date_rng, "<=" & j & "-" & n_days(j, year(Date)) & "-" & year(Date))
+
+    'кол-во дней отпуска по месяцам в графике работы
+    '(onerror потому что vlookup часто выдаёт ошибки)
+        On Error Resume Next
+            month_w = WorksheetFunction.VLookup(pers, ThisWorkbook.Worksheets(j + 3).Range("B7:AM39"), 38, False)
+            If Err <> 0 Then
+                month_w = 0
+            End If
+            
+        'склоняем название месяца (для красоты)
+        month_name = IIf(Right(MonthName(j), 1) = "ь" Or Right(MonthName(j), 1) = "й", Left(MonthName(j), Len(MonthName(j)) - 1) & "е", MonthName(j) & "е")
+        
+        pers_name = n_word(pers, , 1)
+        pers_surname = n_word(pers, , 2)
+        'склоняем фамилию
+        If Right(pers_surname, 2) = "ов" Then
+            pers_surname = pers_surname & "а"
+        ElseIf Right(pers_surname, 1) = "а" Then
+            pers_surname = Left(pers_surname, Len(pers_surname) - 1) & "ой"
+        ElseIf Right(pers_surname, 1) = "н" Then
+            pers_surname = pers_surname & "а"
+        ElseIf Right(pers_surname, 2) = "ий" Then
+            pers_surname = Left(pers_surname, Len(pers_surname) - 2) & "ого"
+        End If
+
+        'склоняем имя
+        If Right(pers_name, 1) = "а" Then
+            pers_name = Left(pers_name, Len(pers_name) - 1) & "ы"
+        ElseIf Right(pers_name, 1) = "я" Then
+            pers_name = Left(pers_name, Len(pers_name) - 1) & "и"
+        ElseIf Right(pers_name, 1) = "й" Then
+            pers_name = Left(pers_name, Len(pers_name) - 1) & "я"
+        ElseIf Right(pers_name, 1) = "д" Or Right(pers_name, 1) = "л" Or Right(pers_name, 1) = "р" Or Right(pers_name, 1) = "в" _
+            Or Right(pers_name, 1) = "т" Or Right(pers_name, 1) = "н" Then
+            
+            pers_name = pers_name & "а"
+        End If
+        
+        If month_h > month_w Then
+        resp = MsgBox("В графике отпусков в " & StrConv(month_name, vbLowerCase) & " у " & pers_surname & " " & pers_name & " больше дней отпуска, чем в графике работы.", vbOKCancel, "Несоответствие в графиках!")
+            If resp = vbCancel Then
+                Exit Sub
+            End If
+    
+        ElseIf month_h < month_w Then
+        resp = MsgBox("В графике отпусков в " & StrConv(month_name, vbLowerCase) & " у " & pers_surname & " " & pers_name & " меньше дней отпуска, чем в графике работы.", vbOKCancel, "Несоответствие в графиках!")
+            If resp = vbCancel Then
+                Exit Sub
+            End If
+        End If
+
+    Next j
+
+Next i
+
+Application.ScreenUpdating = True
+End Sub
