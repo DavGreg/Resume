@@ -1,4 +1,4 @@
-'Данный скрипт VBA создавался для визуализации дней отпусков сотрудников компании по следующим условиям:
+'Данный скрипт VBA создавался для визуализации (окрашивания в определённый цвет) дней отпусков сотрудников компании по следующим условиям:
 '- дни отпуска, взятые в "долг"
 '- дни отпуска, взятые сразу до/после выходных, без учёта выходных в отпуске
 '- подряд взятый отпуск более 14 дней
@@ -92,36 +92,31 @@ For j = 5 To 49 Step 2
                 .TintAndShade = 0
                 .PatternTintAndShade = 0
             End With
-            trick1 = 1
         ElseIf cell3 = "Сб" And Application.Sum(Range(Cells(j, cell3.Column - 4), Cells(j, cell3.Column - 1))) = 4 And Cells(j, cell3.Column) <> 1 Then
             With Cells(j, 1).Interior
                 .Color = 10498160
                 .TintAndShade = 0
                 .PatternTintAndShade = 0
             End With
-            trick2 = 1
         ElseIf cell3 = "Сб" And Application.Sum(Range(Cells(j, cell3.Column - 3), Cells(j, cell3.Column - 1))) = 3 And Cells(j, cell3.Column) <> 1 Then
             With Cells(j, 1).Interior
                 .Color = 10498160
                 .TintAndShade = 0
                 .PatternTintAndShade = 0
             End With
-            trick3 = 1
         ElseIf cell3 = "Вс" And Application.Sum(Range(Cells(j, cell3.Column + 4), Cells(j, cell3.Column - 1))) = 4 And Cells(j, cell3.Column) <> 1 And Cells(j, cell3.Column + 5) <> 1 Then
             With Cells(j, 1).Interior
                 .Color = 10498160
                 .TintAndShade = 0
                 .PatternTintAndShade = 0
             End With
-            trick4 = 1
         ElseIf cell3 = "Вс" And Application.Sum(Range(Cells(j, cell3.Column + 3), Cells(j, cell3.Column - 1))) = 3 And Cells(j, cell3.Column) <> 1 And Cells(j, cell3.Column + 4) <> 1 And Cells(j, cell3.Column + 5) <> 1 Then
             With Cells(j, 1).Interior
                 .Color = 10498160
                 .TintAndShade = 0
                 .PatternTintAndShade = 0
             End With
-            trick5 = 1
-        ElseIf (Not trick1 = 1) And (Not trick2 = 1) And (Not trick3 = 1) And (Not trick4 = 1) And (Not trick5 = 1) Then
+        Else Then
             Cells(j, 1).Interior.Pattern = xlNone
         End If
     Next cell3
