@@ -8,45 +8,45 @@ library(vars)
 library(tsDyn)
 library(rmgarch)
 
-#предварительная работа с данными
+#ГЇГ°ГҐГ¤ГўГ Г°ГЁГІГҐГ«ГјГ­Г Гї Г°Г ГЎГ®ГІГ  Г± Г¤Г Г­Г­Г»Г¬ГЁ
 data <- data.frame(read.csv2('C:/Users/79670/Desktop/stata/ryady/dz/data_dz2.csv', header = TRUE, sep=';',dec = '.'))
 dates <-as.Date(data$date, format = "%d.%m.%Y")
-#логарифмруем данные
+#Г«Г®ГЈГ Г°ГЁГґГ¬Г°ГіГҐГ¬ Г¤Г Г­Г­Г»ГҐ
 log_rts <- log(xts(x = data$rts, order.by = dates))
 log_snp <- log(xts(x = data$snp, order.by = dates))
 log_brent <- log(xts(x = data$brent, order.by = dates))
 log_nikkei <- log(xts(x = data$nikkei, order.by = dates))
-#графики логарифимрованных значений
-plot(log_rts, main = 'РТС', ylab = 'логарифмированные значения')
-plot(log_snp, main = 'S&P500', ylab = 'логарифмированные значения')
-plot(log_brent, main = 'спот-цена Brent', ylab = 'логарифмированные значения')
-plot(log_nikkei, main = 'Nikkei 225', ylab = 'логарифмированные значения')
-#взяли первые разности рядов
+#ГЈГ°Г ГґГЁГЄГЁ Г«Г®ГЈГ Г°ГЁГґГЁГ¬Г°Г®ГўГ Г­Г­Г»Гµ Г§Г­Г Г·ГҐГ­ГЁГ©
+plot(log_rts, main = 'ГђГ’Г‘', ylab = 'Г«Г®ГЈГ Г°ГЁГґГ¬ГЁГ°Г®ГўГ Г­Г­Г»ГҐ Г§Г­Г Г·ГҐГ­ГЁГї')
+plot(log_snp, main = 'S&P500', ylab = 'Г«Г®ГЈГ Г°ГЁГґГ¬ГЁГ°Г®ГўГ Г­Г­Г»ГҐ Г§Г­Г Г·ГҐГ­ГЁГї')
+plot(log_brent, main = 'Г±ГЇГ®ГІ-Г¶ГҐГ­Г  Brent', ylab = 'Г«Г®ГЈГ Г°ГЁГґГ¬ГЁГ°Г®ГўГ Г­Г­Г»ГҐ Г§Г­Г Г·ГҐГ­ГЁГї')
+plot(log_nikkei, main = 'Nikkei 225', ylab = 'Г«Г®ГЈГ Г°ГЁГґГ¬ГЁГ°Г®ГўГ Г­Г­Г»ГҐ Г§Г­Г Г·ГҐГ­ГЁГї')
+#ГўГ§ГїГ«ГЁ ГЇГҐГ°ГўГ»ГҐ Г°Г Г§Г­Г®Г±ГІГЁ Г°ГїГ¤Г®Гў
 dif_log_rts <- diff(log_rts)[2:length(log_rts)]
 dif_log_snp <- diff(log_snp)[2:length(log_rts)]
 dif_log_brent <- diff(log_brent)[2:length(log_rts)]
 dif_log_nikkei <- diff(log_nikkei)[2:length(log_rts)]
 dif <- data.frame(cbind(dif_log_rts,dif_log_snp,dif_log_brent,dif_log_nikkei))
 dif_frame <- dif[,2:5]
-#графики лог-доходностей
-plot(dif_log_rts, main = 'РТС', ylab = 'лог-доходности')
-plot(dif_log_snp, main = 'S&P500', ylab = 'лог-доходности')
-plot(dif_log_brent, main = 'спот-цена Brent', ylab = 'лог-доходности')
-plot(dif_log_nikkei, main = 'Nikkei 225', ylab = 'лог-доходности')
+#ГЈГ°Г ГґГЁГЄГЁ Г«Г®ГЈ-Г¤Г®ГµГ®Г¤Г­Г®Г±ГІГҐГ©
+plot(dif_log_rts, main = 'ГђГ’Г‘', ylab = 'Г«Г®ГЈ-Г¤Г®ГµГ®Г¤Г­Г®Г±ГІГЁ')
+plot(dif_log_snp, main = 'S&P500', ylab = 'Г«Г®ГЈ-Г¤Г®ГµГ®Г¤Г­Г®Г±ГІГЁ')
+plot(dif_log_brent, main = 'Г±ГЇГ®ГІ-Г¶ГҐГ­Г  Brent', ylab = 'Г«Г®ГЈ-Г¤Г®ГµГ®Г¤Г­Г®Г±ГІГЁ')
+plot(dif_log_nikkei, main = 'Nikkei 225', ylab = 'Г«Г®ГЈ-Г¤Г®ГµГ®Г¤Г­Г®Г±ГІГЁ') 
 
-#проверяем на брейки Бай-Перроном
+#ГЇГ°Г®ГўГҐГ°ГїГҐГ¬ Г­Г  ГЎГ°ГҐГ©ГЄГЁ ГЃГ Г©-ГЏГҐГ°Г°Г®Г­Г®Г¬
 bp.log_rts <- breakpoints(log_rts~1, h = 0.15, breaks = 3)
 bp.log_snp <- breakpoints(log_snp~1, h = 0.15, breaks = 3)
 bp.log_brent <- breakpoints(log_brent~1, h = 0.15, breaks = 3)
 bp.log_nikkei <- breakpoints(log_nikkei~1, h = 0.15, breaks = 3)
 
-#смотрим даты по полученным номерам наблюдений 
+#Г±Г¬Г®ГІГ°ГЁГ¬ Г¤Г ГІГ» ГЇГ® ГЇГ®Г«ГіГ·ГҐГ­Г­Г»Г¬ Г­Г®Г¬ГҐГ°Г Г¬ Г­Г ГЎГ«ГѕГ¤ГҐГ­ГЁГ© 
 data.frame(log_rts[bp.log_rts$breakpoints])
 data.frame(log_snp[bp.log_snp$breakpoints])
 data.frame(log_brent[bp.log_brent$breakpoints])
 data.frame(log_nikkei[bp.log_nikkei$breakpoints])
 
-# строим ADL для РТС
+# Г±ГІГ°Г®ГЁГ¬ ADL Г¤Г«Гї ГђГ’Г‘
 formula_rts <- dif_log_rts~dif_log_rts+dif_log_snp+dif_log_brent+dif_log_nikkei
 frame_data <- log(data[,2:5])
 colnames(frame_data) <- c('dif_log_rts', 'dif_log_snp', 'dif_log_brent', 'dif_log_nikkei')
@@ -56,7 +56,7 @@ adl_rts_lags <- finiteDLMauto(formula=formula_rts, frame_data, q.min = 1, q.max 
               trace = FALSE)
 summary(adl_rts)
 
-#тест ADF на стационарность
+#ГІГҐГ±ГІ ADF Г­Г  Г±ГІГ Г¶ГЁГ®Г­Г Г°Г­Г®Г±ГІГј
 adf_rts_level <- ur.df(log_rts,  type = "drift", selectlags = "BIC")
 adf_rts_level@teststat
 summary(adf_rts_level)
@@ -73,7 +73,7 @@ adf_nikkei_level <- ur.df(log_nikkei, type = "drift", selectlags = "BIC")
 adf_nikkei_level@teststat
 summary(adf_nikkei_level)
 
-# проверка на стационарность первых разностей рядов
+# ГЇГ°Г®ГўГҐГ°ГЄГ  Г­Г  Г±ГІГ Г¶ГЁГ®Г­Г Г°Г­Г®Г±ГІГј ГЇГҐГ°ГўГ»Гµ Г°Г Г§Г­Г®Г±ГІГҐГ© Г°ГїГ¤Г®Гў
 adf_rts_dif <- ur.df(dif_log_rts,  type = "drift", selectlags = "BIC")
 adf_rts_dif@teststat
 summary(adf_rts_level)
@@ -90,67 +90,67 @@ adf_nikkei_dif <- ur.df(dif_log_nikkei, type = "drift", selectlags = "BIC")
 adf_nikkei_dif@teststat
 summary(adf_nikkei_level)
 
-# для теста Йохансена на коинтеграцию сначала объеденим одномерные ряды в многомерный
+# Г¤Г«Гї ГІГҐГ±ГІГ  Г‰Г®ГµГ Г­Г±ГҐГ­Г  Г­Г  ГЄГ®ГЁГ­ГІГҐГЈГ°Г Г¶ГЁГѕ Г±Г­Г Г·Г Г«Г  Г®ГЎГєГҐГ¤ГҐГ­ГЁГ¬ Г®Г¤Г­Г®Г¬ГҐГ°Г­Г»ГҐ Г°ГїГ¤Г» Гў Г¬Г­Г®ГЈГ®Г¬ГҐГ°Г­Г»Г©
 multivar_ts <- merge(log_snp,log_brent, log_nikkei, log_rts)
-# потом проведём тест
+# ГЇГ®ГІГ®Г¬ ГЇГ°Г®ГўГҐГ¤ВёГ¬ ГІГҐГ±ГІ
 johansen_coint <- ca.jo(multivar_ts, type = 'trace', ecdet = "trend", K = 4,
                         spec="transitory")
 
 summary(johansen_coint)
 
-# так как коинтеграции нет, строим VARIMA(p,d,q)
+# ГІГ ГЄ ГЄГ ГЄ ГЄГ®ГЁГ­ГІГҐГЈГ°Г Г¶ГЁГЁ Г­ГҐГІ, Г±ГІГ°Г®ГЁГ¬ VARIMA(p,d,q)
 # varma <- VARMA(data_matrix, p = 2, q = 1)
-# сдаёмся и строим VAR в разностях (VARIMA(p,1,0))
+# Г±Г¤Г ВёГ¬Г±Гї ГЁ Г±ГІГ°Г®ГЁГ¬ VAR Гў Г°Г Г§Г­Г®Г±ГІГїГµ (VARIMA(p,1,0))
 dif_multivar_ts <- merge(dif_log_rts,dif_log_snp,dif_log_nikkei,dif_log_brent)
 
-# оцениваем VARMA(1,1,0), выбирая количество лагов по AIC
+# Г®Г¶ГҐГ­ГЁГўГ ГҐГ¬ VARMA(1,1,0), ГўГ»ГЎГЁГ°Г Гї ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® Г«Г ГЈГ®Гў ГЇГ® AIC
 VAR_hat <- VAR(y = dif_multivar_ts[1:(length(dif_log_rts)-1),], ic = "AIC")
 VAR_hat$varresult
 summary(VAR_hat)
 
-# проверяем на отсутсвие автокорреляции остатков тестом Бройша-Годфри
+# ГЇГ°Г®ГўГҐГ°ГїГҐГ¬ Г­Г  Г®ГІГ±ГіГІГ±ГўГЁГҐ Г ГўГІГ®ГЄГ®Г°Г°ГҐГ«ГїГ¶ГЁГЁ Г®Г±ГІГ ГІГЄГ®Гў ГІГҐГ±ГІГ®Г¬ ГЃГ°Г®Г©ГёГ -ГѓГ®Г¤ГґГ°ГЁ
 serial.test(VAR_hat, lags.bg = 1, type = "BG")
 
-# проеряем, все ли характеристические корни полинома VAR меньше единицы по модулю
+# ГЇГ°Г®ГҐГ°ГїГҐГ¬, ГўГ±ГҐ Г«ГЁ ГµГ Г°Г ГЄГІГҐГ°ГЁГ±ГІГЁГ·ГҐГ±ГЄГЁГҐ ГЄГ®Г°Г­ГЁ ГЇГ®Г«ГЁГ­Г®Г¬Г  VAR Г¬ГҐГ­ГјГёГҐ ГҐГ¤ГЁГ­ГЁГ¶Г» ГЇГ® Г¬Г®Г¤ГіГ«Гѕ
 var_roots <- roots(VAR_hat)
 
-# проверили на наличие arch эффекта
+# ГЇГ°Г®ГўГҐГ°ГЁГ«ГЁ Г­Г  Г­Г Г«ГЁГ·ГЁГҐ arch ГЅГґГґГҐГЄГІГ 
 arch1 <- arch.test(VAR_hat, lags.multi = 1, multivariate.only = TRUE)
 arch.test(VAR_hat, lags.multi = 3, multivariate.only = TRUE)
-# делаем прогноз на один шаг
+# Г¤ГҐГ«Г ГҐГ¬ ГЇГ°Г®ГЈГ­Г®Г§ Г­Г  Г®Г¤ГЁГ­ ГёГ ГЈ
 var_pred <- predict(VAR_hat, n.ahead = 1, ci = 0.95)
 var_pred_fcst <- c(0.0003444441, -9.747825e-06, -0.001009998, -0.0005650997) 
 var_pred_fact <- c(0.002450962, 0.002941694, -0.002754394, -0.007790147)
 
 accuracy(var_pred_fcst, var_pred_fact, D = 0, d = 1)
 
-# оцениваем SVAR
-# сначала зададим априорную матрицу ограничений A (назовём её amat)
+# Г®Г¶ГҐГ­ГЁГўГ ГҐГ¬ SVAR
+# Г±Г­Г Г·Г Г«Г  Г§Г Г¤Г Г¤ГЁГ¬ Г ГЇГ°ГЁГ®Г°Г­ГіГѕ Г¬Г ГІГ°ГЁГ¶Гі Г®ГЈГ°Г Г­ГЁГ·ГҐГ­ГЁГ© A (Г­Г Г§Г®ГўВёГ¬ ГҐВё amat)
 amat <- diag(4)
-amat[2:4,1] <- NA       # матрицу задаётся исходя из
-amat[3:4,2] <- NA       # предположения, что S&P500 може влиять в момент t
-amat[4,3] <- NA         # на все остальные перменные, Brent на все, кроме S&P500
-                        # Nikkei 225 на РТС и РТС ни на одну из перменых
+amat[2:4,1] <- NA       # Г¬Г ГІГ°ГЁГ¶Гі Г§Г Г¤Г ВёГІГ±Гї ГЁГ±ГµГ®Г¤Гї ГЁГ§
+amat[3:4,2] <- NA       # ГЇГ°ГҐГ¤ГЇГ®Г«Г®Г¦ГҐГ­ГЁГї, Г·ГІГ® S&P500 Г¬Г®Г¦ГҐ ГўГ«ГЁГїГІГј Гў Г¬Г®Г¬ГҐГ­ГІ t
+amat[4,3] <- NA         # Г­Г  ГўГ±ГҐ Г®Г±ГІГ Г«ГјГ­Г»ГҐ ГЇГҐГ°Г¬ГҐГ­Г­Г»ГҐ, Brent Г­Г  ГўГ±ГҐ, ГЄГ°Г®Г¬ГҐ S&P500
+                        # Nikkei 225 Г­Г  ГђГ’Г‘ ГЁ ГђГ’Г‘ Г­ГЁ Г­Г  Г®Г¤Г­Гі ГЁГ§ ГЇГҐГ°Г¬ГҐГ­Г»Гµ
 
 SVAR_hat <- SVAR(VAR_hat, estmethod = "direct", Amat = amat, Bmat = NULL, lrtest = TRUE)
 
-# функции импульсных откликов
+# ГґГіГ­ГЄГ¶ГЁГЁ ГЁГ¬ГЇГіГ«ГјГ±Г­Г»Гµ Г®ГІГЄГ«ГЁГЄГ®Гў
 irf_all <- irf(SVAR_hat, n.ahead = 10, boot = FALSE)
 plot(irf_all, ylab = "", main = "S&P500 shock to RRP")
 
 snp_rts_irf <- irf(SVAR_hat, impulse = "dif_log_rts", response = "dif_log_rts", n.ahead = 10, boot = FALSE)
-plot(snp_rts_irf, ylab = "лог-доходности РТС",   main = "реакция РТС на шоки РТС")
+plot(snp_rts_irf, ylab = "Г«Г®ГЈ-Г¤Г®ГµГ®Г¤Г­Г®Г±ГІГЁ ГђГ’Г‘",   main = "Г°ГҐГ ГЄГ¶ГЁГї ГђГ’Г‘ Г­Г  ГёГ®ГЄГЁ ГђГ’Г‘")
 
 snp_rts_irf <- irf(SVAR_hat, impulse = "dif_log_snp", response = "dif_log_rts", n.ahead = 10, boot = FALSE)
-plot(snp_rts_irf, ylab = "лог-доходности РТС", main = "реакция РТС на шоки S&P500")
+plot(snp_rts_irf, ylab = "Г«Г®ГЈ-Г¤Г®ГµГ®Г¤Г­Г®Г±ГІГЁ ГђГ’Г‘", main = "Г°ГҐГ ГЄГ¶ГЁГї ГђГ’Г‘ Г­Г  ГёГ®ГЄГЁ S&P500")
 
 snp_rts_irf <- irf(SVAR_hat, impulse = "dif_log_brent", response = "dif_log_rts", n.ahead = 10, boot = FALSE)
-plot(snp_rts_irf, ylab = "лог-доходности РТС", main = "реакция РТС на шоки Brent")
+plot(snp_rts_irf, ylab = "Г«Г®ГЈ-Г¤Г®ГµГ®Г¤Г­Г®Г±ГІГЁ ГђГ’Г‘", main = "Г°ГҐГ ГЄГ¶ГЁГї ГђГ’Г‘ Г­Г  ГёГ®ГЄГЁ Brent")
 
 snp_rts_irf <- irf(SVAR_hat, impulse = "dif_log_nikkei", response = "dif_log_rts", n.ahead = 10, boot = FALSE)
-plot(snp_rts_irf, ylab = "лог-доходности РТС", main = "реакция РТС на шоки Nikkei225")
+plot(snp_rts_irf, ylab = "Г«Г®ГЈ-Г¤Г®ГµГ®Г¤Г­Г®Г±ГІГЁ ГђГ’Г‘", main = "Г°ГҐГ ГЄГ¶ГЁГї ГђГ’Г‘ Г­Г  ГёГ®ГЄГЁ Nikkei225")
 
-# декрмпозиция дисперсии прогноза
+# Г¤ГҐГЄГ°Г¬ГЇГ®Г§ГЁГ¶ГЁГї Г¤ГЁГ±ГЇГҐГ°Г±ГЁГЁ ГЇГ°Г®ГЈГ­Г®Г§Г 
 fevd1 <- fevd(SVAR_hat, n.ahead = 5,)
 fevd1
 plot(fevd1)
