@@ -1,0 +1,159 @@
+'старые статусы
+Const predvar As String = "Предварительная"
+Const odobr As String = "Одобренная"
+Const prodan As String = "Проданная"
+'новые статусы
+'Const predvar As String = "Планирование расходов"
+'Const odobr As String = "Продажа ФК"
+'Const prodan As String = "Подготовка программы. Подача в НМО"
+
+Const nrInitiators1 As String = "инициаторы1"
+Const nrInitiators2 As String = "инициаторы2"
+Const nrInitiators3 As String = "инициаторы3"
+Const vbDoubleQuote As String = """"
+
+Sub statusChanges()
+Application.ScreenUpdating = False
+
+Dim lastRowOld      As Long
+Dim PredToOdOffline As Long
+Dim PredToOdOnline  As Long
+Dim oldWs           As Worksheet
+Dim newWs           As Worksheet
+Dim resultsWs       As Worksheet
+Dim oldRngId        As Range
+Dim newRngId        As Range
+Dim oldIdStatus     As Range
+Dim newIdStatus     As Range
+Dim rInitiatorsTab  As Range
+Dim cInitiator      As Range
+
+
+Set resultsWs = ThisWorkbook.Worksheets("итог")
+Set oldWs = ThisWorkbook.Worksheets("старая Таблица")
+Set newWs = ThisWorkbook.Worksheets("новая Таблица")
+
+Set rInitiatorsTab1 = resultsWs.Range(nrInitiators1)
+Set rInitiatorsTab2 = resultsWs.Range(nrInitiators2)
+Set rInitiatorsTab3 = resultsWs.Range(nrInitiators3)
+
+
+resultsWs.Range("B3:D" & resultsWs.Range("A3").End(xlDown).Row).ClearContents
+resultsWs.Range("B12:D" & resultsWs.Range("A12").End(xlDown).Row).ClearContents
+resultsWs.Range("B21:D" & resultsWs.Range("A21").End(xlDown).Row).ClearContents
+
+
+lastRowNew = newWs.Range("A10000").End(xlUp).Row
+
+For Each newRngId In newWs.Range("A5:A" & lastRowNew)
+    Set oldRngId = oldWs.Range("A:A").Find(newRngId)
+            
+            
+    If Not oldRngId Is Nothing Then 'если номер есть в старой таблице
+        Set oldIdStatus = oldWs.Range("B" & oldRngId.Row)
+        Set newIdStatus = newWs.Range("B" & newRngId.Row)
+        Set Initiator = newWs.Range("AR" & newRngId.Row)
+        
+        If oldIdStatus <> newIdStatus Then
+            If oldIdStatus = predvar And (newIdStatus = odobr Or newIdStatus = prodan) Then
+                    PredToOdOffline = newWs.Range("P" & newIdStatus.Row)
+                    PredToOdOnline = newWs.Range("AX" & newIdStatus.Row)
+                    
+                    'найти Initiator в нужной таблице
+                    Set cInitiator = rInitiatorsTab3.Find(Trim(Initiator))
+                    
+                    Set curFormulaOffline = resultsWs.Cells(cInitiator.Row, 2)
+                    Set curFormulaOnline = resultsWs.Cells(cInitiator.Row, 3)
+                    Set curFormulaId = resultsWs.Cells(cInitiator.Row, 4)
+                    
+                    If curFormulaOffline = "" Then
+                        curFormulaOffline.FormulaR1C1 = "=" & CLng(PredToOdOffline)
+                    Else
+                        curFormulaOffline.FormulaR1C1 = curFormulaOffline.FormulaR1C1 & "+" & CLng(PredToOdOffline)
+                    End If
+                    
+                    If curFormulaOnline = "" Then
+                        curFormulaOnline.FormulaR1C1 = "=" & CLng(PredToOdOnline)
+                    Else
+                        curFormulaOnline.FormulaR1C1 = curFormulaOnline.FormulaR1C1 & "+" & CLng(PredToOdOnline)
+                    End If
+                    
+                    If curFormulaId = "" Then
+                        curFormulaId.FormulaR1C1 = "=" & vbDoubleQuote & newRngId & vbDoubleQuote
+                    Else
+                        curFormulaId.FormulaR1C1 = Left(curFormulaId.FormulaR1C1, Len(curFormulaId.FormulaR1C1) - 1) & ", " & newRngId & vbDoubleQuote
+                    End If
+            End If
+        Else
+            GoTo continueLoop
+        End If
+    
+    Else 'если номера нет в старой таблице
+        Set newIdStatus = newWs.Range("B" & newRngId.Row)
+        Set Initiator = newWs.Range("AR" & newRngId.Row)
+
+        If newIdStatus = predvar Then 'если появилось в Предварительной
+                newPredOffline = newWs.Range("P" & newIdStatus.Row)
+                newPredOnline = newWs.Range("AX" & newIdStatus.Row)
+                'найти Initiator в нужной таблице
+                Set cInitiator = rInitiatorsTab1.Find(Trim(Initiator))
+
+                Set curFormulaOffline = resultsWs.Cells(cInitiator.Row, 2)
+                Set curFormulaOnline = resultsWs.Cells(cInitiator.Row, 3)
+                Set curFormulaId = resultsWs.Cells(cInitiator.Row, 4)
+
+                If curFormulaOffline = "" Then
+                    curFormulaOffline.FormulaR1C1 = "=" & CLng(newPredOffline)
+                Else
+                    curFormulaOffline.FormulaR1C1 = curFormulaOffline.FormulaR1C1 & "+" & CLng(newPredOffline)
+                End If
+
+                If curFormulaOnline = "" Then
+                    curFormulaOnline.FormulaR1C1 = "=" & CLng(newPredOnline)
+                Else
+                    curFormulaOnline.FormulaR1C1 = curFormulaOnline.FormulaR1C1 & "+" & CLng(newPredOnline)
+                End If
+
+                If curFormulaId = "" Then
+                    curFormulaId.FormulaR1C1 = "=" & vbDoubleQuote & newRngId & vbDoubleQuote
+                Else
+                    curFormulaId.FormulaR1C1 = Left(curFormulaId.FormulaR1C1, Len(curFormulaId.FormulaR1C1) - 1) & ", " & newRngId & vbDoubleQuote
+                End If
+        
+        ElseIf newIdStatus = odobr Or newIdStatus = prodan Then 'появилось в Одобренной/Проданной
+                
+                newOdobrOffline = newWs.Range("P" & newIdStatus.Row)
+                newOdobrOnline = newWs.Range("AX" & newIdStatus.Row)
+                'найти Initiator в нужной таблице
+                Set cInitiator = rInitiatorsTab2.Find(Trim(Initiator))
+
+                Set curFormulaOffline = resultsWs.Cells(cInitiator.Row, 2)
+                Set curFormulaOnline = resultsWs.Cells(cInitiator.Row, 3)
+                Set curFormulaId = resultsWs.Cells(cInitiator.Row, 4)
+
+                If curFormulaOffline = "" Then
+                    curFormulaOffline.FormulaR1C1 = "=" & CLng(newOdobrOffline)
+                Else
+                    curFormulaOffline.FormulaR1C1 = curFormulaOffline.FormulaR1C1 & "+" & CLng(newOdobrOffline)
+                End If
+
+                If curFormulaOnline = "" Then
+                    curFormulaOnline.FormulaR1C1 = "=" & CLng(newOdobrOnline)
+                Else
+                    curFormulaOnline.FormulaR1C1 = curFormulaOnline.FormulaR1C1 & "+" & CLng(newOdobrOnline)
+                End If
+                
+                If curFormulaId = "" Then
+                    curFormulaId.FormulaR1C1 = "=" & vbDoubleQuote & newRngId & vbDoubleQuote
+                Else
+                    curFormulaId.FormulaR1C1 = Left(curFormulaId.FormulaR1C1, Len(curFormulaId.FormulaR1C1) - 1) & ", " & newRngId & vbDoubleQuote
+                End If
+        End If
+    End If
+    
+continueLoop:
+Next
+
+Application.ScreenUpdating = True
+End Sub
+
