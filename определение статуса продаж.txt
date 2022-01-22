@@ -1,30 +1,9 @@
 'данный макрос был написан для автоматизации поиска среди записей продаж, являющихся новыми, а также поиска отмененных продаж
 
-Private Type SaleExtendedId
-    sFC As String
-    sDate As String
-    sManager As String
-    sSrcTableID As String
-    sRevenue As Long
-End Type
-
-
-Const snManagerRng As String = "менеджеры"
-
-
-Function ClearTxt(txt As String) As String
-Application.ScreenUpdating = False
-txt = Replace(txt, " ", "")
-txt = Replace(txt, ".", "")
-txt = Replace(txt, "-", "")
-txt = StrConv(txt, vbLowerCase)
-ClearTxt = txt
-Application.ScreenUpdating = True
-End Function
-
-
 Sub BonusCalculate()
 Application.ScreenUpdating = False
+Application.Calculation = xlCalculationManual
+ThisWorkbook.Worksheets("общий объедин").Range("X1").Value = Now()
 
 Dim WsTab1            As Worksheet
 Dim WsTab2            As Worksheet
@@ -39,11 +18,11 @@ Dim Tab3LastRow       As Long
 Dim NewCombTabLastRow As Long
 Dim OldCombTabLastRow As Long
 
-Set WsTab1 = ThisWorkbook.Worksheets(1)
-Set WsTab2 = ThisWorkbook.Worksheets(2)
-Set WsTab3 = ThisWorkbook.Worksheets(3)
-Set WsNewCombTab = ThisWorkbook.Worksheets(4)
-Set WsOldCombTab = ThisWorkbook.Worksheets(5)
+Set WsTab1 = ThisWorkbook.Worksheets(2)
+Set WsTab2 = ThisWorkbook.Worksheets(3)
+Set WsTab3 = ThisWorkbook.Worksheets(4)
+Set WsOldCombTab = ThisWorkbook.Worksheets(1)
+Set WsNewCombTab = ThisWorkbook.Worksheets(5)
 Set WsAllCombTab = ThisWorkbook.Worksheets(6)
 Set WsCalc = ThisWorkbook.Worksheets("Расчет БЧ (новый)2021+РОП")
 
@@ -56,21 +35,27 @@ NewCombTabLastRow = WsNewCombTab.Range("A10000").End(xlUp).Row
 AllCombTabLastRow = WsAllCombTab.Range("A10000").End(xlUp).Row
 
 WsNewCombTab.Range("A5:T" & (NewCombTabLastRow + 1)).ClearContents
-WsOldCombTab.Range("U5:U" & (OldCombTabLastRow + 1)).ClearContents
-WsAllCombTab.Range("A5:T" & (AllCombTabLastRow + 1)).ClearContents
+'WsOldCombTab.Range("U5:U" & (OldCombTabLastRow + 1)).ClearContents
+WsAllCombTab.Range("A5:V" & (AllCombTabLastRow + 1)).ClearContents
 
 OldCombTabLastRow = WsOldCombTab.Range("A10000").End(xlUp).Row
 NewCombTabLastRow = WsNewCombTab.Range("A10000").End(xlUp).Row
 AllCombTabLastRow = WsAllCombTab.Range("A10000").End(xlUp).Row
 
 'Объединить таблицы с листа Конференции всех общих файлов
-WsNewCombTab.Range("A" & (NewCombTabLastRow + 1) & ":T" & ((NewCombTabLastRow + 1) + Tab1LastRow - 5)).Value = WsTab1.Range("A5:T" & Tab1LastRow).Value
+If Tab1LastRow > 4 Then
+    WsNewCombTab.Range("A" & (NewCombTabLastRow + 1) & ":T" & ((NewCombTabLastRow + 1) + Tab1LastRow - 5)).Value = WsTab1.Range("A5:T" & Tab1LastRow).Value
+End If
 
 NewCombTabLastRow = WsNewCombTab.Range("A10000").End(xlUp).Row
-WsNewCombTab.Range("A" & (NewCombTabLastRow + 1) & ":T" & ((NewCombTabLastRow + 1) + Tab2LastRow - 5)).Value = WsTab2.Range("A5:T" & Tab2LastRow).Value
+If Tab2LastRow > 4 Then
+    WsNewCombTab.Range("A" & (NewCombTabLastRow + 1) & ":T" & ((NewCombTabLastRow + 1) + Tab2LastRow - 5)).Value = WsTab2.Range("A5:T" & Tab2LastRow).Value
+End If
 
 NewCombTabLastRow = WsNewCombTab.Range("A10000").End(xlUp).Row
-WsNewCombTab.Range("A" & (NewCombTabLastRow + 1) & ":T" & ((NewCombTabLastRow + 1) + Tab3LastRow - 5)).Value = WsTab3.Range("A5:T" & Tab3LastRow).Value
+If Tab3LastRow > 4 Then
+    WsNewCombTab.Range("A" & (NewCombTabLastRow + 1) & ":T" & ((NewCombTabLastRow + 1) + Tab3LastRow - 5)).Value = WsTab3.Range("A5:T" & Tab3LastRow).Value
+End If
 
 NewCombTabLastRow = WsNewCombTab.Range("A10000").End(xlUp).Row
 'Проверить есть ли незаполненные продажники, если есть - выдать предупреждение об этом и остановить исполнение программы
@@ -82,23 +67,26 @@ For i = 5 To NewCombTabLastRow
 Next i
 
 'Объединить эти два объединенных
-WsAllCombTab.Range("A" & (AllCombTabLastRow + 1) & ":T" & NewCombTabLastRow).Value = WsNewCombTab.Range("A5:T" & NewCombTabLastRow).Value
+WsAllCombTab.Range("A" & (AllCombTabLastRow + 1) & ":T" & OldCombTabLastRow).Value = WsOldCombTab.Range("A5:T" & OldCombTabLastRow).Value
 
 AllCombTabLastRow = WsAllCombTab.Range("A100000").End(xlUp).Row
-WsAllCombTab.Range("A" & (AllCombTabLastRow + 1) & ":T" & (AllCombTabLastRow + OldCombTabLastRow - 4)).Value = WsOldCombTab.Range("A5:T" & (OldCombTabLastRow + 1)).Value
-
+If NewCombTabLastRow <> 4 Then
+    WsAllCombTab.Range("A" & (AllCombTabLastRow + 1) & ":T" & (AllCombTabLastRow + NewCombTabLastRow - 4)).Value = WsNewCombTab.Range("A5:T" & (NewCombTabLastRow + 1)).Value
+End If
+    
 'при этом объединении приделать строчкам ID чтобы понимать из какого - старого или нового - объедин файла каждая строка
 Dim cell As Range
 
-For Each cell In WsAllCombTab.Range("U5:U" & NewCombTabLastRow)
-    cell.Value = Right(WsNewCombTab.Name, 8)
+For Each cell In WsAllCombTab.Range("U5:U" & OldCombTabLastRow)
+    cell.Value = WsOldCombTab.Name
 Next
 
 AllCombTabLastRow = WsAllCombTab.Range("A100000").End(xlUp).Row
-For Each cell In WsAllCombTab.Range("U" & (NewCombTabLastRow + 1) & ":U" & AllCombTabLastRow - 1)
-    cell.Value = Right(WsOldCombTab.Name, 8)
-Next
-
+If OldCombTabLastRow <> AllCombTabLastRow Then
+    For Each cell In WsAllCombTab.Range("U" & (OldCombTabLastRow + 1) & ":U" & AllCombTabLastRow)
+        cell.Value = WsNewCombTab.Name
+    Next
+End If
 
 Dim manager As Range
 Dim managerRng As Range
@@ -108,101 +96,133 @@ Set managerRng = WsCalc.Range(snManagerRng)
 Dim rngManager1 As Range
 Dim rngManager2 As Range
 Dim IsCanceled As Boolean
+Dim clManager As Range
+Dim clFC As Range
+Dim clDate As Range
+Dim clRevenue As Range
+Dim clSrcTableID As Range
 
 'ДЛЯ ПОИСКА ОТМЕН (ищем старые строчки среди новых)
-For i = 5 To NewCombTabLastRow
+For i = 5 To OldCombTabLastRow
     IsCanceled = True
+    num = 0
     
-    cSale.sManager = WsAllCombTab.Range("K" & i).Value
-    cSale.sFC = ClearTxt(WsAllCombTab.Range("B" & i).Value)
-    cSale.sDate = WsAllCombTab.Range("F" & i).Value
-    cSale.sRevenue = WsAllCombTab.Range("J" & i).Value
-    cSale.sSrcTableID = WsAllCombTab.Range("U" & i).Value
+    Set clManager = WsAllCombTab.Range("K" & i)
+    Set clFC = WsAllCombTab.Range("B" & i)
+    Set clDate = WsAllCombTab.Range("F" & i)
+    Set clRevenue = WsAllCombTab.Range("J" & i)
+    Set clSrcTableID = WsAllCombTab.Range("U" & i)
         
-    Set rngManager1 = WsAllCombTab.Range("K:K").Find(cSale.sManager)
-    Set rngFC1 = WsAllCombTab.Range("K:K").Find(cSale.sFC)
-    Set rngDate1 = WsAllCombTab.Range("K:K").Find(cSale.sDate)
-    Set rngRevenue1 = WsAllCombTab.Range("K:K").Find(cSale.sRevenue)
-    Set rngSrcTableID1 = WsAllCombTab.Range("K:K").Find(cSale.sSrcTableID)
-    
-    Set rngManager2 = WsAllCombTab.Range("K" & (NewCombTabLastRow + 1) & ":I" & AllCombTabLastRow).Find(cSale.sManager)
-    
+    Set rngManager2 = WsAllCombTab.Range("K" & OldCombTabLastRow & ":K" & AllCombTabLastRow).Find(clManager.Value)
+            
     Do While Not rngManager2 Is Nothing
         
-        If WsAllCombTab.Range("F" & rngManager2.Row).Value = cSale.sDate Then
-            If ClearTxt(WsAllCombTab.Range("B" & rngManager2.Row).Value) = cSale.sFC Then
-                If WsAllCombTab.Range("J" & rngManager2.Row).Value = cSale.sRevenue Then
+        If WsAllCombTab.Range("F" & rngManager2.Row).Value = clDate Then
+            If ClearTxt(WsAllCombTab.Range("B" & rngManager2.Row).Value) = ClearTxt(clFC.Value) Then
+                If WsAllCombTab.Range("J" & rngManager2.Row).Value = clRevenue Then
                     IsCanceled = False
-                    GoTo ContinueForLoop
+                    GoTo ContinueForLoop1
                 Else 'осн приход не совпал
-                    Set rngManager2 = WsAllCombTab.Range("K" & (rngManager2.Row + 1) & ":I" & AllCombTabLastRow).Find(cSale.sManager)
+                    Set rngManager2 = WsAllCombTab.Range("K" & rngManager2.Row & ":K" & AllCombTabLastRow).Find(clManager.Value)
+                    
+                    If num = rngManager2.Row Then
+                        Exit Do
+                    Else
+                        num = rngManager2.Row
+                    End If
+                
                 End If
             
             Else 'ФК не совпала
-                Set rngManager2 = WsAllCombTab.Range("K" & (rngManager2.Row + 1) & ":I" & AllCombTabLastRow).Find(cSale.sManager)
+                Set rngManager2 = WsAllCombTab.Range("K" & rngManager2.Row & ":K" & AllCombTabLastRow).Find(clManager.Value)
+                
+                If num = rngManager2.Row Then
+                    Exit Do
+                Else
+                    num = rngManager2.Row
+                End If
             End If
         
         Else 'дата ОМ не совпала
-            Set rngManager2 = WsAllCombTab.Range("K" & (rngManager2.Row + 1) & ":I" & AllCombTabLastRow).Find(cSale.sManager)
+            Set rngManager2 = WsAllCombTab.Range("K" & rngManager2.Row & ":K" & AllCombTabLastRow).Find(clManager.Value)
+            
+            If num = rngManager2.Row Then
+                Exit Do
+            Else
+                num = rngManager2.Row
+            End If
         End If
-                                
+                                        
     Loop
+    
     
     If IsCanceled Then
         WsAllCombTab.Cells(i, 22).Value = "Отмена"
     End If
             
-ContinueForLoop:
+ContinueForLoop1:
 Next i
 
 
 'ДЛЯ ПОИСКА НОВЫХ ПРОДАЖ (ищем новые строчки среди старых)
-For i = (NewCombTabLastRow + 1) To AllCombTabLastRow
+For j = (OldCombTabLastRow + 1) To AllCombTabLastRow
     IsOldSale = False
+    num = 0
     
-    cSale.sManager = WsAllCombTab.Range("K" & i).Value
-    cSale.sFC = ClearTxt(WsAllCombTab.Range("B" & i).Value)
-    cSale.sDate = WsAllCombTab.Range("F" & i).Value
-    cSale.sRevenue = WsAllCombTab.Range("J" & i).Value
-    cSale.sSrcTableID = WsAllCombTab.Range("U" & i).Value
-        
-    Set rngManager1 = WsAllCombTab.Range("K:K").Find(cSale.sManager)
-    Set rngFC1 = WsAllCombTab.Range("K:K").Find(cSale.sFC)
-    Set rngDate1 = WsAllCombTab.Range("K:K").Find(cSale.sDate)
-    Set rngRevenue1 = WsAllCombTab.Range("K:K").Find(cSale.sRevenue)
-    Set rngSrcTableID1 = WsAllCombTab.Range("K:K").Find(cSale.sSrcTableID)
+    Set clManager = WsAllCombTab.Range("K" & j)
+    Set clFC = WsAllCombTab.Range("B" & j)
+    Set clDate = WsAllCombTab.Range("F" & j)
+    Set clRevenue = WsAllCombTab.Range("J" & j)
+    Set clSrcTableID = WsAllCombTab.Range("U" & j)
     
-    Set rngManager2 = WsAllCombTab.Range("K" & (NewCombTabLastRow + 1) & ":I" & AllCombTabLastRow).Find(cSale.sManager)
+    Set rngManager2 = WsAllCombTab.Range("K4:K" & OldCombTabLastRow).Find(clManager)
     
     Do While Not rngManager2 Is Nothing
         
-        If WsAllCombTab.Range("F" & rngManager2.Row).Value = cSale.sDate Then
-            If ClearTxt(WsAllCombTab.Range("B" & rngManager2.Row).Value) = cSale.sFC Then
-                If WsAllCombTab.Range("J" & rngManager2.Row).Value = cSale.sRevenue Then
+        If WsAllCombTab.Range("F" & rngManager2.Row).Value = clDate Then
+            If ClearTxt(WsAllCombTab.Range("B" & rngManager2.Row).Value) = ClearTxt(clFC.Value) Then
+                If WsAllCombTab.Range("J" & rngManager2.Row).Value = clRevenue Then
                     IsOldSale = True
-                    GoTo ContinueForLoop
+                    GoTo ContinueForLoop2
                 Else 'осн приход не совпал
-                    Set rngManager2 = WsAllCombTab.Range("K" & (rngManager2.Row + 1) & ":I" & AllCombTabLastRow).Find(cSale.sManager)
+                    Set rngManager2 = WsAllCombTab.Range("K" & rngManager2.Row & ":K" & OldCombTabLastRow).Find(clManager.Value)
+            
+                    If num = rngManager2.Row Then
+                       Exit Do
+                    Else
+                        num = rngManager2.Row
+                    End If
                 End If
             
             Else 'ФК не совпала
-                Set rngManager2 = WsAllCombTab.Range("K" & (rngManager2.Row + 1) & ":I" & AllCombTabLastRow).Find(cSale.sManager)
+                Set rngManager2 = WsAllCombTab.Range("K" & rngManager2.Row & ":K" & OldCombTabLastRow).Find(clManager.Value)
+        
+                If num = rngManager2.Row Then
+                   Exit Do
+                Else
+                    num = rngManager2.Row
+                End If
             End If
         
         Else 'дата ОМ не совпала
-            Set rngManager2 = WsAllCombTab.Range("K" & (rngManager2.Row + 1) & ":I" & AllCombTabLastRow).Find(cSale.sManager)
-        End If
-                                
-    Loop
+            Set rngManager2 = WsAllCombTab.Range("K" & rngManager2.Row & ":K" & OldCombTabLastRow).Find(clManager.Value)
     
+            If num = rngManager2.Row Then
+               Exit Do
+            Else
+                num = rngManager2.Row
+            End If
+        End If
+        
+    Loop
+        
     If Not IsOldSale Then
-        WsAllCombTab.Cells(i, 22).Value = "Новая продажа"
+        WsAllCombTab.Cells(j, 22).Value = "Новая продажа"
     End If
             
-ContinueForLoop:
-Next i
-
-
+ContinueForLoop2:
+Next j
 
 Application.ScreenUpdating = True
+Application.Calculation = xlCalculationAutomatic
 End Sub
